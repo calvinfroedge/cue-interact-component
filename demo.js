@@ -11,7 +11,7 @@ define(['jquery', 'main'], function($, CueInteract) {
 		position: 'relative',
 		display: 'inline-block',
 		border: '2px solid #ccc',
-		padding: '2em',
+		padding: '3em',
 		textAlign: 'center'
 	});
 
@@ -38,6 +38,14 @@ define(['jquery', 'main'], function($, CueInteract) {
 				css: css,
 				callback: function(){
 					alert('delete clicked');
+				},
+				'confirm': {
+					text: {
+						message: 'Are you sure?',
+						submessage: 'This cannot be undone',
+						yes: 'Yes',
+						no: 'No'
+					}
 				}
 			}]
 		]

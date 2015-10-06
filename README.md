@@ -72,6 +72,58 @@ CSS:
 	}
 ```
 
+##Confirmable Interactions
+Want to show a confirmation menu? Easy. This will delay calling the callback until after the 'yes' action has been selected:
+
+JS:
+
+```
+			['Delete', {
+				css: css,
+				callback: function(){
+					alert('delete clicked');
+				},
+				'confirm': {
+					text: {
+						message: 'Are you sure?',
+						submessage: 'This cannot be undone',
+						yes: 'Yes',
+						no: 'No'
+					}
+				}
+			}]
+```
+
+CSS:
+
+```
+		.cue-interact-confirmation {
+			color: #fff;
+			position: absolute;
+			z-index: 2;
+			text-align: center;
+			width: 100%;
+			height: 100%;
+		}
+
+		.cue-interact-confirm, .cue-interact-cancel {
+			position: absolute;
+			bottom: 0.5em;
+		}
+
+		.cue-interact-confirm {
+			right: 0.5em;
+		}
+
+		.cue-interact-cancel {
+			left: 0.5em;
+		}
+
+		.cue-interact-confirmation a {
+			color: #fff;
+		}
+```
+
 ##Custom Animation Timing
 Pass `opts.animationTime` to customize. Default is 500ms.
 

@@ -21,7 +21,9 @@
     var CueInteract = function(target, opts){
 			var opts = opts || {};
 
-      var els = {}
+      opts.events = opts.events || {};     
+
+      var els = {};
 
 			var ANIMATION_TIME = opts.animationTime || 500;
 
@@ -51,6 +53,64 @@
 				zIndex: 2
 			});
 
+			/*
+			 * Use this for setting confirmation dialog
+			 */
+			var tmp;
+
+			/*
+			 * Fade out the container, remove confirmation if present, reset defaults
+			 */
+			var hide = function(){
+				els.container.fadeOut(ANIMATION_TIME, function(){
+					if(tmp){
+						tmp.remove();
+						els.options.show();
+					}
+				});
+			}
+
+			/*
+			 * Show confirmation dialog when user clicks confirmable action
+			 */
+			var confirmDialog = function(cue, finish){
+				var c = cue['confirm'];
+				console.log('confirm!');
+				if(typeof c == 'boolean') c = {};
+
+				if(!c.text) c.text = {};
+
+				tmp = $('<div class="cue-interact-confirmation">');
+
+				var msgText = c.text.message || 'Are you sure?';
+				var msg = $('<h3>'+msgText+'</h3>')
+
+				var subMsgText = c.text.submessage || 'This cannot be undone.';
+				var subMsg = $('<p>'+subMsgText+'</p>');
+
+				var yes = $('<a class="cue-interact-confirm" href="#">'+(c.text.yes || 'yes')+'</a>');
+				var no = $('<a class="cue-interact-cancel" href="#">'+(c.text.no || 'no')+'</a>');
+
+				tmp.append(msg, subMsg, yes, no);
+
+				els.options.hide();
+				els.container.append(tmp);
+
+				yes.on('click', function(){
+					finish(function(){
+						hide();
+					});
+				});
+
+				no.on('click', function(){
+					tmp.remove();
+					els.options.show();
+				});
+			}
+
+			/*
+			 * If cues are given, map a callback function to them
+			 */
 			if(opts.cues){
 				opts.cues.map(function(item){
 					var cue = item.pop();
@@ -69,28 +129,33 @@
 
 					a.on('click', function(event){
 						event.preventDefault();
-						if(cb) cb();
-						els.container.trigger('cue', [key]);
+
+						var finish = function(preCb){
+							if(preCb) preCb();
+
+							if(cb) cb();
+							els.container.trigger('cue', [key]);
+						}
+
+						if('confirm' in cue){
+							confirmDialog(cue, finish);
+						} else {
+							finish();
+						}
 					});
 					els.options.append(a);
 				});
 			}
 
-			els.container.append(els.bg, els.options);
-      
-      var opts = opts || {};
-
-      opts.events = opts.events || {};     
-      
-			target.append(els.container);
-
-			if(opts.events.onRender){
-				opts.events.onRender(els.container);
-			}
-
+			/*
+			 * Watch for target on hover
+			 */
 			var animating = false;
 
+			var hideTimer;
 			target.hover(function(){
+				if(hideTimer) clearTimeout(hideTimer);
+
 				if(!animating){
 					animating = true;
 					els.container.fadeIn(ANIMATION_TIME, function(){
@@ -98,8 +163,22 @@
 					});
 				}
 			}, function(){
-				els.container.fadeOut(ANIMATION_TIME, function(){});
+				hideTimer = setTimeout(function(){
+					hideTimer = null;
+					hide();
+				}, 300);
 			});
+
+			/*
+			 * Append container to target and fire render event
+			 */
+			els.container.append(els.bg, els.options);
+      
+			target.append(els.container);
+
+			if(opts.events.onRender){
+				opts.events.onRender(els.container);
+			}
       
       //Public API for the component
       return {
